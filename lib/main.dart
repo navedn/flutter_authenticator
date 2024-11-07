@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'profile_screen.dart';
 
 // Initializes Firebase and the applications
 void main() async {
@@ -19,7 +20,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Firebase Auth Demo',
-      home: MyHomePage(title: 'Firebase Auth Demo'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => MyHomePage(title: 'Firebase Auth Demo'),
+        '/profile': (context) => ProfileScreen(),
+        '/login': (context) => MyHomePage(title: 'Login'),
+      },
     );
   }
 }
@@ -184,6 +190,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
         _success = true;
         _userEmail = _emailController.text;
         _initialState = false;
+        Navigator.of(context).pushReplacementNamed('/profile');
       });
     } catch (e) {
       setState(() {
