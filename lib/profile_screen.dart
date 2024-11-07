@@ -1,19 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _newPasswordController = TextEditingController();
 
-  ProfileScreen({Key? key}) : super(key: key);
-
-  // Sign out function
-  Future<void> _signOut(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.of(context).pushReplacementNamed(
-        '/login'); // Assumes you have a named route for the login screen
+  // Function to change password directly
+  Future<void> _changePassword(BuildContext context) async {
+    final user = _auth.currentUser;
+    if (user != null && _newPasswordController.text.isNotEmpty) {
+      try {
+        await user.updatePassword(_newPasswordController.text);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Password changed successfully.'),
+          backgroundColor: Colors.green,
+        ));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Please enter a new password.'),
+        backgroundColor: Colors.orange,
+      ));
+    }
   }
 
-  // Password reset function
   Future<void> _changePasswordWithEmail(BuildContext context) async {
     final user = _auth.currentUser;
     if (user != null) {
@@ -30,6 +50,13 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  // Sign out function
+  Future<void> _signOut(BuildContext context) async {
+    await _auth.signOut();
+    Navigator.of(context).pushReplacementNamed(
+        '/login'); // Assumes you have a named route for the login screen
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _auth.currentUser;
@@ -37,12 +64,6 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.logout),
-        //     onPressed: () => _signOut(context),
-        //   ),
-        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -60,8 +81,17 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 24),
+              TextField(
+                controller: _newPasswordController,
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+              ),
+              SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => _changePasswordWithEmail(context),
+                onPressed: () => _changePassword(context),
                 child: Text('Change Password'),
               ),
               SizedBox(height: 16),
